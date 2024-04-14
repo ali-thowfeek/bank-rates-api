@@ -1,10 +1,10 @@
 const express = require("express");
-const scrapeRoute = require("./routes/scrape");
+const apiRouter = require("./routes/api");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use("/api/scrape", scrapeRoute);
+app.use("/api", apiRouter);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

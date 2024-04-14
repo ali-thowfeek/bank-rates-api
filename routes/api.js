@@ -22,6 +22,14 @@ router.get("/currencies", (req, res) => {
   res.json(currenciesArray);
 });
 
+router.get("/types", (req, res) => {
+  const typesArray = Object.keys(constants.supportedTypes).map((key) => ({
+    id: key,
+    name: constants.supportedTypes[key],
+  }));
+  res.json(typesArray);
+});
+
 router.use("/scrape", scrapeRoute);
 
 module.exports = router;

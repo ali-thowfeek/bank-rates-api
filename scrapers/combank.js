@@ -1,40 +1,60 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-const { supportedCurrencies } = require("../constants");
+const {
+  supportedBanks,
+  supportedCurrencies,
+  supportedTypes,
+} = require("../constants");
 
 const targetUrl = "https://www.combank.lk/rates-tariff#exchange-rates";
 
-const currencyDisplayText = Object.keys(supportedCurrencies).reduce(
-  (obj, key) => {
-    obj[key] = key;
-    return obj;
-  },
-  {}
-);
+const currencyDisplayTextInWebsite = Object.assign({}, supportedCurrencies);
 
-currencyDisplayText.USD = "US DOLLARS";
+currencyDisplayTextInWebsite.USD = "US DOLLARS";
+currencyDisplayTextInWebsite.EUR = "EURO";
+currencyDisplayTextInWebsite.GBP = "STERLING POUNDS";
 
-exports.scrapeData = async (currency) => {
+exports.scrapeData = async (currency, type) => {
   try {
     const response = await axios.get(targetUrl);
     const $ = cheerio.load(response.data);
     const table = $(".with-border");
 
     const row = table.find(
-      `tbody tr:contains('${currencyDisplayText[currency]}')`
+      `tbody tr:contains('${currencyDisplayTextInWebsite[currency]}')`
     );
-    const buyingRate = parseFloat(row.find("td:nth-child(3)").text().trim());
-    const sellingRate = parseFloat(row.find("td:nth-child(4)").text().trim());
+
+    let buyingElementIndex;
+    let sellingElementIndex;
+
+    if (type === supportedTypes.cur) {
+      buyingElementIndex = 2;
+      sellingElementIndex = 3;
+    } else if (type === supportedTypes.chq) {
+      buyingElementIndex = 4;
+      sellingElementIndex = 5;
+    } else {
+      // type === supportedTypes.ttr
+      buyingElementIndex = 6;
+      sellingElementIndex = 7;
+    }
+
+    const buyingRate = parseFloat(
+      row.find(`td:nth-child(${buyingElementIndex})`).text().trim()
+    );
+    const sellingRate = parseFloat(
+      row.find(`td:nth-child(${sellingElementIndex})`).text().trim()
+    );
 
     return {
-      bank: "Commercial Bank",
-      currency,
+      bank: supportedBanks.combank,
+      currency: supportedCurrencies[currency],
+      type,
       buyingRate,
       sellingRate,
     };
   } catch (error) {
-    console.error(error);
     throw new Error("Scraping failed for Commercial Bank.");
   }
 };

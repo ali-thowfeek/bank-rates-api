@@ -16,8 +16,16 @@ const supportedTypes = {
   chq: "Cheque Rate",
 };
 
+const httpStatuses = {
+  SUCCESS: 200,
+  SERVER_ERROR: 500,
+  BAD_REQUEST: 400,
+  NOT_FOUND: 404,
+};
+
 module.exports = {
-  supportedBanks: supportedBanks,
-  supportedCurrencies: supportedCurrencies,
-  supportedTypes: supportedTypes,
+  supportedBanks,
+  supportedCurrencies,
+  supportedTypes,
+  httpStatuses,
 };

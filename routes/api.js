@@ -1,11 +1,15 @@
 const express = require("express");
 const scrapeRoute = require("../routes/scrape");
-const constants = require("../constants");
+const {
+  supportedBanks,
+  supportedCurrencies,
+  supportedTypes,
+} = require("../constants");
 
 const router = express.Router();
 
 router.get("/banks", (req, res) => {
-  const banksArray = Object.values(constants.supportedBanks).map((bank) => ({
+  const banksArray = Object.values(supportedBanks).map((bank) => ({
     id: bank.id,
     name: bank.name,
   }));
@@ -13,7 +17,7 @@ router.get("/banks", (req, res) => {
 });
 
 router.get("/currencies", (req, res) => {
-  const currenciesArray = Object.values(constants.supportedCurrencies).map(
+  const currenciesArray = Object.values(supportedCurrencies).map(
     (currency) => ({
       id: currency.id,
       name: currency.name,
@@ -23,11 +27,36 @@ router.get("/currencies", (req, res) => {
 });
 
 router.get("/types", (req, res) => {
-  const typesArray = Object.keys(constants.supportedTypes).map((key) => ({
+  const typesArray = Object.keys(supportedTypes).map((key) => ({
     id: key,
-    name: constants.supportedTypes[key],
+    name: supportedTypes[key],
   }));
   res.json(typesArray);
+});
+
+router.get("/metadata", (req, res) => {
+  const banksArray = Object.values(supportedBanks).map((bank) => ({
+    id: bank.id,
+    name: bank.name,
+  }));
+
+  const currenciesArray = Object.values(supportedCurrencies).map(
+    (currency) => ({
+      id: currency.id,
+      name: currency.name,
+    })
+  );
+
+  const typesArray = Object.keys(supportedTypes).map((key) => ({
+    id: key,
+    name: supportedTypes[key],
+  }));
+
+  res.json({
+    banks: banksArray,
+    currencies: currenciesArray,
+    types: typesArray,
+  });
 });
 
 router.use("/scrape", scrapeRoute);

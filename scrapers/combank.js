@@ -1,11 +1,16 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const BankScrapper = require("../models/BankScrapper");
+const RateResponse = require("../models/RateResponse");
+const { NotFoundError } = require("../models/Error");
 
 const {
   supportedBanks,
   supportedCurrencies,
   supportedTypes,
 } = require("../constants");
+
+const bank = supportedBanks.combank;
 
 const targetUrl = "https://www.combank.lk/rates-tariff#exchange-rates";
 
@@ -15,7 +20,7 @@ currencyDisplayTextInWebsite.USD = "US DOLLARS";
 currencyDisplayTextInWebsite.EUR = "EURO";
 currencyDisplayTextInWebsite.GBP = "STERLING POUNDS";
 
-exports.scrapeData = async (currency, type) => {
+const scrapper = async (currency, type) => {
   try {
     const response = await axios.get(targetUrl);
     const $ = cheerio.load(response.data);
@@ -24,6 +29,10 @@ exports.scrapeData = async (currency, type) => {
     const row = table.find(
       `tbody tr:contains('${currencyDisplayTextInWebsite[currency]}')`
     );
+
+    if (row.length === 0) {
+      throw new NotFoundError(`${currency}' is not supported by ${bank.name}.`);
+    }
 
     let buyingElementIndex;
     let sellingElementIndex;
@@ -47,14 +56,20 @@ exports.scrapeData = async (currency, type) => {
       row.find(`td:nth-child(${sellingElementIndex})`).text().trim()
     );
 
-    return {
-      bank: supportedBanks.combank,
-      currency: supportedCurrencies[currency],
+    return new RateResponse(
+      bank,
+      supportedCurrencies[currency],
       type,
       buyingRate,
-      sellingRate,
-    };
+      sellingRate
+    );
   } catch (error) {
-    throw new Error("Scraping failed for Commercial Bank.");
+    if (error instanceof BaseError) {
+      throw error;
+    } else {
+      throw new ServerError(`Server error. Scraping failed for ${bank.name}.`);
+    }
   }
 };
+
+module.exports = new BankScrapper(scrapper);

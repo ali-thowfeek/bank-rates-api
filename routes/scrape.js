@@ -1,49 +1,63 @@
 const express = require("express");
 const router = express.Router();
 const bankScrapers = require("../scrapers");
-const constants = require("../constants");
+const {
+  supportedBanks,
+  supportedCurrencies,
+  supportedTypes,
+  httpStatuses,
+} = require("../constants");
+const { CustomError, BaseError } = require("../models/Error");
 
 router.get("/", async (req, res) => {
   const { bank, currency, type } = req.query;
 
   try {
     if (!bank || !currency) {
-      return res.status(400).json({
-        error: "Both 'bank' and 'currency' query parameters are required.",
-      });
+      return res
+        .status(httpStatuses.BAD_REQUEST)
+        .json(
+          new CustomError(
+            "Both 'bank' and 'currency' query parameters are required."
+          )
+        );
     }
 
-    const passedBank = constants.supportedBanks[bank];
+    const passedBank = supportedBanks[bank];
     if (!passedBank) {
-      return res.status(400).json({
-        error: "Bank not supported.",
-      });
+      return res
+        .status(httpStatuses.BAD_REQUEST)
+        .json(new CustomError("Invalid 'bank' parameter."));
     }
 
-    if (!constants.supportedCurrencies[currency]) {
-      return res.status(400).json({
-        error: "Currency not supported",
-      });
+    if (!supportedCurrencies[currency]) {
+      return res
+        .status(httpStatuses.BAD_REQUEST)
+        .json(new CustomError("Invalid 'currency' parameter."));
     }
 
-    const passedType = type
-      ? constants.supportedTypes[type]
-      : constants.supportedTypes.ttr;
+    const passedType = type ? supportedTypes[type] : supportedTypes.ttr;
 
     if (!passedType) {
-      return res.status(400).json({
-        error: "Invalid 'type' parameter",
-      });
+      return res
+        .status(httpStatuses.BAD_REQUEST)
+        .json(new CustomError("Invalid 'type' parameter."));
     }
 
     const scrapedData = await bankScrapers[passedBank.id].scrapeData(
       currency,
       passedType
     );
+
     res.json(scrapedData);
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: error.message || "Server error" });
+    if (error instanceof BaseError) {
+      res.status(error.httpStatusCode).send(error.body);
+    } else {
+      res
+        .status(httpStatuses.SERVER_ERROR)
+        .send(new CustomError("Server error."));
+    }
   }
 });
 

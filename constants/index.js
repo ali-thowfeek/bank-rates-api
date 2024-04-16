@@ -1,5 +1,6 @@
 const supportedBanks = {
   combank: { id: "combank", name: "Commercial Bank Of Ceylon" },
+  amana: { id: "amana", name: "Amana Bank" },
   // TODO: add more
 };
 

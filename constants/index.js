@@ -1,13 +1,19 @@
+const combank = "combank";
+const amana = "amana";
+
 const supportedBanks = {
-  combank: { id: "combank", name: "Commercial Bank Of Ceylon" },
-  amana: { id: "amana", name: "Amana Bank" },
+  [combank]: { id: combank, name: "Commercial Bank Of Ceylon" },
+  [amana]: { id: amana, name: "Amana Bank" },
   // TODO: add more
 };
 
+const USD = "USD";
+const EUR = "EUR";
+const GBP = "GBP";
 const supportedCurrencies = {
-  USD: { id: "USD", name: "United States Dollar" },
-  EUR: { id: "EUR", name: "Euro" },
-  GBP: { id: "GBP", name: "British Pound Sterling" },
+  [USD]: { id: USD, name: "United States Dollar" },
+  [EUR]: { id: EUR, name: "Euro" },
+  [GBP]: { id: GBP, name: "British Pound Sterling" },
   // TODO: add more
 };
 

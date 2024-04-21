@@ -40,7 +40,7 @@ class BankScrapper {
 
       if (row.length === 0) {
         throw new NotFoundError(
-          `${currency}' is not supported by ${this.bank.name}.`
+          `${currency} is not supported by ${this.bank.name}.`
         );
       }
 
